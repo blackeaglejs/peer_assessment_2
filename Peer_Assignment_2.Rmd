@@ -1,0 +1,44 @@
+---
+title: "Peer_Assignment_2"
+author: "Zoheb Nensey"
+date: "September 26, 2015"
+output: html_document
+---
+# Insert Title Here 
+
+## Synopsis 
+
+## Data Processing
+The data was downloaded from the course website as a csv.bz2 file, which can be read natively by the read.csv() function. 
+```{r cache=TRUE}
+storm_data <- read.csv("storm_data.csv.bz2")
+```
+The dplyr package was then loaded for grouping the data. 
+```{r message=FALSE}
+library(dplyr)
+```
+
+The data was then grouped by the event type and summed by both injuries and fatalities. 
+A new variable (total_pop_health) was created summing the injuries and fatalities to explore total population damage by each type of weather. This dataset was then sorted by the total_pop_health variable. 
+
+```{r}
+storm_data_by_type <- storm_data %>%
+      group_by(EVTYPE) %>%
+      summarize(fatalities_sum=sum(FATALITIES),
+                injury_sum=sum(INJURIES),
+                total_pop_health = fatalities_sum+injury_sum)
+
+storm_data_type_sorted <- storm_data_by_type[order(-storm_data_by_type$total_pop_health),]
+```
+
+## Results
+```{r echo=FALSE}
+biggest_event <- as.character(head(storm_data_type_sorted$EVTYPE, n=1))
+event_fatalities <- as.character(head(storm_data_type_sorted$fatalities_sum,n=1))
+event_injuries <- as.character(head(storm_data_type_sorted$injury_sum,n=1))
+event_total <- as.character(head(storm_data_type_sorted$total_pop_health,n=1))
+```
+The worst type of weather event, as a category, was `r biggest_event`. It caused `r event_fatalities` fatalities and `r event_injuries` injuries for a total of `r event_total`.
+
+```{r}
+```
