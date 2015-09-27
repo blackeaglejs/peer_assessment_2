@@ -87,7 +87,7 @@ storm_data_prop_dmg_sorted <- storm_data_by_dmg[order(-storm_data_by_dmg$propert
 storm_data_crop_dmg_sorted <- storm_data_by_dmg[order(-storm_data_by_dmg$crop_damage_sum),]
 ```
 ## Results
-```{r echo=FALSE}
+```{r}
 biggest_event <- as.character(head(storm_data_type_sorted$EVTYPE, n=1))
 event_fatalities <- as.character(head(storm_data_type_sorted$fatalities_sum,n=1))
 event_injuries <- as.character(head(storm_data_type_sorted$injury_sum,n=1))
@@ -106,10 +106,10 @@ ggplot(data=head(storm_data_type_sorted),aes(x=EVTYPE,y=total_pop_health)) +
 As for economic damages, it still appears that tornados cause the most damage.
 ```{r message=FALSE}
 ### Total Damage
-biggest_event_total_dmg <- head(storm_data_total_dmg_sorted$EVTYPE, n=1)
-highest_prop_total_dmg <- head(storm_data_total_dmg_sorted$property_damage_sum,n=1)
-highest_crop_total_dmg <- head(storm_data_total_dmg_sorted$crop_damage_sum,n=1)
-highest_total_dmg <- head(storm_data_total_dmg_sorted$total_damage,n=1)
+biggest_event_total_dmg <- as.character(head(storm_data_total_dmg_sorted$EVTYPE, n=1))
+highest_prop_total_dmg <- as.character(head(storm_data_total_dmg_sorted$property_damage_sum,n=1))
+highest_crop_total_dmg <- as.character(head(storm_data_total_dmg_sorted$crop_damage_sum,n=1))
+highest_total_dmg <- as.character(head(storm_data_total_dmg_sorted$total_damage,n=1))
 ### Property Damage
 biggest_event_prop_dmg <- head(storm_data_prop_dmg_sorted$EVTYPE, n=1)
 highest_prop_dmg <- head(storm_data_prop_dmg_sorted$property_damage_sum,n=1)
@@ -117,7 +117,7 @@ highest_prop_dmg <- head(storm_data_prop_dmg_sorted$property_damage_sum,n=1)
 biggest_event_crop_dmg <- head(storm_data_crop_dmg_sorted$EVTYPE,n=1)
 highest_crop_dmg <- head(storm_data_crop_dmg_sorted$crop_damage_sum,n=1)
 ```
-The total amount of economic damage for `r biggest_event_total_dmg` was $`r highest_total_dmg`. The total amount of property damage was `r highest_prop_total_dmg`, and the crop damage was `r highest_crop_total_dmg`. This may be due to the volume of tornados relative to other weather events recorded.
+The total amount of economic damage for `r biggest_event_total_dmg` was $`r highest_total_dmg`. The total amount of property damage was $`r highest_prop_total_dmg`, and the crop damage was $`r highest_crop_total_dmg`. This may be due to the volume of tornados relative to other weather events recorded.
 
 The following plot also indicates this. No other weather event even comes close. 
 ```{r fig.width=10}
