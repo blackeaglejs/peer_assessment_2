@@ -1,21 +1,21 @@
 ---
-title: "Peer_Assignment_2"
-author: "Zoheb Nensey"
-date: "September 26, 2015"
+title: "Peer Assignment 2"
+date: "September 27, 2015"
 output: html_document
 ---
-# Insert Title Here 
+# Tornados - The most dangerous of weather events.
 
-## Synopsis 
+Recently, major weather events have caused large amounts of property damage across the United States, with billions of dollars in economic losses, as well as great loss of life. The dataset being analyzed contains much of this data, and is being used in this instance to show the worst types of events. After doing much exploratory analysis, it does seem that tornados are the worst weather event, because they are quick to form and extremely destructive both to humans (who may not have enough warning time to get away) and property(which can get sucked into a tornado easily.)
 
 ## Data Processing
 The data was downloaded from the course website as a csv.bz2 file, which can be read natively by the read.csv() function. 
 ```{r cache=TRUE}
 storm_data <- read.csv("storm_data.csv.bz2")
 ```
-The dplyr package was then loaded for grouping the data. 
+The dplyr package was then loaded for grouping the data. The ggplot2 package was also loaded for later usage. 
 ```{r message=FALSE}
 library(dplyr)
+library(ggplot2)
 ```
 
 The data was then grouped by the event type and summed by both injuries and fatalities. 
@@ -31,6 +31,61 @@ storm_data_by_type <- storm_data %>%
 storm_data_type_sorted <- storm_data_by_type[order(-storm_data_by_type$total_pop_health),]
 ```
 
+For the question of economic damage, there were two useful variables in the provided data. The first of these is 'PROPDMG', which measures property dmage. The second is 'CROPDMG', which measure damage to crops. However, to prepare this data there first had to be evaluation of the exponent. The 'PROPDMGEXP' and 'CROPDMGEXP' provided multipliers which needed to be used with the 'PROPDMG' and 'CROPDMG' variables. In order to preserve the original data, a duplicate dataset was created for manipulation.
+```{r warning=FALSE}
+storm_data_multiplier <- storm_data
+if(storm_data_multiplier$PROPDMGEXP=='h') {
+      storm_data_multiplier$PROPDMG <- storm_data_multiplier$PROPDMG*100
+} else if (storm_data_multiplier$PROPDMGEXP=='H') {
+      storm_data_multiplier$PROPDMG <- storm_data_multiplier$PROPDMG*100
+} else if (storm_data_multiplier$PROPDMGEXP=='k') {
+      storm_data_multiplier$PROPDMG <- storm_data_multiplier$PROPDMG*1000
+} else if (storm_data_multiplier$PROPDMGEXP=='K') {
+      storm_data_multiplier$PROPDMG <- storm_data_multiplier$PROPDMG*1000
+} else if (storm_data_multiplier$PROPDMGEXP=='m') {
+      storm_data_multiplier$PROPDMG <- storm_data_multiplier$PROPDMG*1000000
+} else if (storm_data_multiplier$PROPDMGEXP=='M') {
+      storm_data_multiplier$PROPDMG <- storm_data_multiplier$PROPDMG*1000000
+} else if (storm_data_multiplier$PROPDMGEXP=='b') {
+      storm_data_multiplier$PROPDMG <- storm_data_multiplier$PROPDMG*1000000000
+} else if (storm_data_multiplier$PROPDMGEXP=='B') {
+      storm_data_multiplier$PROPDMG <- storm_data_multiplier$PROPDMG*1000000000
+} else {
+      storm_data_multiplier$PROPDMG <- storm_data_multiplier$PROPDMG
+}
+
+if(storm_data_multiplier$CROPDMGEXP=='h') {
+      storm_data_multiplier$CROPDMG <- storm_data_multiplier$PROPDMG*100
+} else if (storm_data_multiplier$PROPDMGEXP=='H') {
+      storm_data_multiplier$CROPDMG <- storm_data_multiplier$PROPDMG*100
+} else if (storm_data_multiplier$PROPDMGEXP=='k') {
+      storm_data_multiplier$CROPDMG <- storm_data_multiplier$PROPDMG*1000
+} else if (storm_data_multiplier$PROPDMGEXP=='K') {
+      storm_data_multiplier$CROPDMG <- storm_data_multiplier$PROPDMG*1000
+} else if (storm_data_multiplier$PROPDMGEXP=='m') {
+      storm_data_multiplier$CROPDMG <- storm_data_multiplier$PROPDMG*1000000
+} else if (storm_data_multiplier$PROPDMGEXP=='M') {
+      storm_data_multiplier$CROPDMG <- storm_data_multiplier$PROPDMG*1000000
+} else if (storm_data_multiplier$PROPDMGEXP=='b') {
+      storm_data_multiplier$CROPDMG <- storm_data_multiplier$PROPDMG*1000000000
+} else if (storm_data_multiplier$PROPDMGEXP=='B') {
+      storm_data_multiplier$CROPDMG <- storm_data_multiplier$PROPDMG*1000000000
+} else {
+      storm_data_multiplier$CROPDMG <- storm_data_multiplier$PROPDMG
+}
+```
+After the data had been multiplied as necessary, the data were then grouped by the type of event ('EVTYPE') and summarized. The damage was summed for each type of event, and property damage and crop damage were summed into a single 'total_damage' variable. This variable was used for sorting.
+```{r}
+storm_data_by_dmg <- storm_data_multiplier %>%
+      group_by(EVTYPE) %>%
+      summarize(property_damage_sum = sum(PROPDMG),
+                crop_damage_sum = sum(CROPDMG),
+                total_damage=property_damage_sum+crop_damage_sum)
+
+storm_data_total_dmg_sorted <- storm_data_by_dmg[order(-storm_data_by_dmg$total_damage),]
+storm_data_prop_dmg_sorted <- storm_data_by_dmg[order(-storm_data_by_dmg$property_damage_sum),]
+storm_data_crop_dmg_sorted <- storm_data_by_dmg[order(-storm_data_by_dmg$crop_damage_sum),]
+```
 ## Results
 ```{r echo=FALSE}
 biggest_event <- as.character(head(storm_data_type_sorted$EVTYPE, n=1))
@@ -39,6 +94,37 @@ event_injuries <- as.character(head(storm_data_type_sorted$injury_sum,n=1))
 event_total <- as.character(head(storm_data_type_sorted$total_pop_health,n=1))
 ```
 The worst type of weather event, as a category, was `r biggest_event`. It caused `r event_fatalities` fatalities and `r event_injuries` injuries for a total of `r event_total`.
-
-```{r}
+A plot created with ggplot2 shows the six highest types of fatalities. 
+```{r fig.width=10}
+ggplot(data=head(storm_data_type_sorted),aes(x=EVTYPE,y=total_pop_health)) +
+      geom_bar(stat="identity") +
+      xlab("Type of event") +
+      ylab("Total injuries and fatalities") + 
+      ggtitle("Worst Weather Events for Population Health")
 ```
+
+As for economic damages, it still appears that tornados cause the most damage.
+```{r message=FALSE}
+### Total Damage
+biggest_event_total_dmg <- head(storm_data_total_dmg_sorted$EVTYPE, n=1)
+highest_prop_total_dmg <- head(storm_data_total_dmg_sorted$property_damage_sum,n=1)
+highest_crop_total_dmg <- head(storm_data_total_dmg_sorted$crop_damage_sum,n=1)
+highest_total_dmg <- head(storm_data_total_dmg_sorted$total_damage,n=1)
+### Property Damage
+biggest_event_prop_dmg <- head(storm_data_prop_dmg_sorted$EVTYPE, n=1)
+highest_prop_dmg <- head(storm_data_prop_dmg_sorted$property_damage_sum,n=1)
+### Crop Damage
+biggest_event_crop_dmg <- head(storm_data_crop_dmg_sorted$EVTYPE,n=1)
+highest_crop_dmg <- head(storm_data_crop_dmg_sorted$crop_damage_sum,n=1)
+```
+The total amount of economic damage for `r biggest_event_total_dmg` was $`r highest_total_dmg`. The total amount of property damage was `r highest_prop_total_dmg`, and the crop damage was `r highest_crop_total_dmg`. This may be due to the volume of tornados relative to other weather events recorded.
+
+The following plot also indicates this. No other weather event even comes close. 
+```{r fig.width=10}
+ggplot(data=head(storm_data_total_dmg_sorted),aes(x=EVTYPE,y=total_damage)) +
+      geom_bar(stat="identity") + 
+      xlab("Type of event") +
+      ylab("Total Damage in Dollars") + 
+      ggtitle("Worst Weather Events for Economic Damage")
+```
+Finally, if you look at the differences in loss of human life and economic damage, it seems that there is some overlap between events, but it is not uniform. Wind from thunderstorms and flooding both cause large amounts of damage and loss of life, though not nearly as much as tornados. 
